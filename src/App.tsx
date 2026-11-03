@@ -27,6 +27,10 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { GalleryModal } from './components/GalleryModal';
 import { OwnerStudioModal } from './components/OwnerStudioModal';
 import { ShareQrModal } from './components/ShareQrModal';
+import {
+  SignInHelpModal,
+  SignInHelpReason,
+} from './components/SignInHelpModal';
 import { SmartProfileCard } from './components/SmartProfileCard';
 import { SquarePhotoCropModal } from './components/SquarePhotoCropModal';
 import {
@@ -81,6 +85,10 @@ function HubExperience() {
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
+  const [signInHelpOpen, setSignInHelpOpen] = useState(false);
+  const [signInHelpReason, setSignInHelpReason] =
+    useState<SignInHelpReason>('generic');
+  const [signInErrorDetail, setSignInErrorDetail] = useState('');
 
   const seededOnceRef = useRef(false);
 
@@ -91,11 +99,45 @@ function HubExperience() {
   );
 
   const pageUrl =
-    typeof window !== 'undefined' ? window.location.href.split('#')[0] : '';
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}`
+      : '';
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
   };
+
+  // Strip ?fbclid=... and social tracking query clutter from the address bar
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      const trackingKeys = [
+        'fbclid',
+        'gclid',
+        'igshid',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'utm_term',
+      ];
+      let removed = false;
+      for (const key of trackingKeys) {
+        if (url.searchParams.has(key)) {
+          url.searchParams.delete(key);
+          removed = true;
+        }
+      }
+      if (removed) {
+        const nextSearch = url.searchParams.toString();
+        const cleanHref = `${url.pathname}${nextSearch ? `?${nextSearch}` : ''}${url.hash}`;
+        window.history.replaceState({}, document.title, cleanHref);
+      }
+    } catch {
+      // Ignore URL parsing errors
+    }
+  }, []);
 
   useEffect(() => {
     if (!toastMsg) return;
@@ -380,7 +422,15 @@ function HubExperience() {
     setStudioOpen(true);
   };
 
-  const handleOwnerSignIn = async () => {
+  const isEmbeddedSocialWebView = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    return /(FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|MicroMessenger)/i.test(
+      navigator.userAgent
+    );
+  };
+
+  const executeGooglePopupSignIn = async () => {
+    setSignInHelpOpen(false);
     setSigningIn(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -397,10 +447,56 @@ function HubExperience() {
         );
       }
     } catch (err) {
-      console.error('Google Sign-In failed or closed:', err);
+      const code =
+        typeof err === 'object' && err !== null && 'code' in err
+          ? String((err as { code?: unknown }).code || '')
+          : '';
+      const message = err instanceof Error ? err.message : String(err);
+
+      if (
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request'
+      ) {
+        showToast('Google sign-in window was closed.');
+      } else if (
+        code === 'auth/unauthorized-domain' ||
+        message.includes('unauthorized-domain')
+      ) {
+        setSignInErrorDetail(code || 'auth/unauthorized-domain');
+        setSignInHelpReason('unauthorized-domain');
+        setSignInHelpOpen(true);
+      } else if (
+        code === 'auth/popup-blocked' ||
+        message.includes('popup-blocked')
+      ) {
+        setSignInErrorDetail(code || 'auth/popup-blocked');
+        setSignInHelpReason('popup-blocked');
+        setSignInHelpOpen(true);
+      } else if (
+        message.toLowerCase().includes('disallowed_useragent') ||
+        isEmbeddedSocialWebView()
+      ) {
+        setSignInErrorDetail(code);
+        setSignInHelpReason('in-app-browser');
+        setSignInHelpOpen(true);
+      } else {
+        setSignInErrorDetail(code || message);
+        setSignInHelpReason('generic');
+        setSignInHelpOpen(true);
+      }
     } finally {
       setSigningIn(false);
     }
+  };
+
+  const handleOwnerSignIn = () => {
+    if (isEmbeddedSocialWebView()) {
+      setSignInErrorDetail('');
+      setSignInHelpReason('in-app-browser');
+      setSignInHelpOpen(true);
+      return;
+    }
+    void executeGooglePopupSignIn();
   };
 
   const handleOwnerSignOut = async () => {
@@ -563,6 +659,18 @@ function HubExperience() {
           onSelectSquarePhotoFile={(file) => setPendingPhotoFile(file)}
         />
       )}
+
+      {/* Google Sign-In Helper (Vercel Domain Auth / In-App Browser / Popup Guard) */}
+      <SignInHelpModal
+        open={signInHelpOpen}
+        reason={signInHelpReason}
+        errorDetail={signInErrorDetail}
+        cleanUrl={pageUrl}
+        onClose={() => setSignInHelpOpen(false)}
+        onRetrySignIn={() => {
+          void executeGooglePopupSignIn();
+        }}
+      />
 
       {/* Toast Feedback */}
       {toastMsg && (

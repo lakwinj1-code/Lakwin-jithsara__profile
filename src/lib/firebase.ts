@@ -38,7 +38,11 @@ function createFirestoreInstance(): Firestore {
 export const db = createFirestoreInstance();
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+});
 
+export const FIREBASE_PROJECT_ID = firebaseConfig.projectId;
 export const SITE_OWNER_EMAIL = 'lakwinj1@gmail.com';
 
 export enum OperationType {
