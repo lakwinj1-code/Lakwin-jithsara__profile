@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var desc = Object.getOwnPropertyDescriptor(window, 'fetch');
+          if (desc && desc.get && !desc.set && desc.configurable) {
+            var getter = desc.get;
+            Object.defineProperty(window, 'fetch', {
+              configurable: true,
+              enumerable: desc.enumerable,
+              get: getter,
+              set: function () {},
+            });
+          }
+        } catch (_) {}
+
+        window.addEventListener(
+          'error',
+          function (event) {
+            var src = (event && event.filename) || '';
+            var stack = (event && event.error && event.error.stack) || '';
+            if (
+              src.indexOf('chrome-extension://') === 0 ||
+              stack.indexOf('chrome-extension://') !== -1
+            ) {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+            }
+          },
+          true
+        );
+      })();
+    </script>
+    <title>Personal Link & Portfolio Hub</title>
+    <meta name="description" content="An all-in-one personal bio, social media link hub, creative gallery, digital contact card, and direct messaging portfolio." />
+    <meta property="og:title" content="Personal Link & Portfolio Hub" />
+    <meta property="og:description" content="An all-in-one personal bio, social media link hub, creative gallery, digital contact card, and direct messaging portfolio." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#09090B] text-white antialiased selection:bg-white selection:text-zinc-950">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

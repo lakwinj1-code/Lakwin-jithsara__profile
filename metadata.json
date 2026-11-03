@@ -1,0 +1,6 @@
+{
+  "name": "Personal Link & Portfolio Hub",
+  "description": "An all-in-one personal bio, social media link hub, creative gallery, digital contact card, and direct messaging portfolio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

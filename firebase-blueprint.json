@@ -1,0 +1,370 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "Public personal profile, biography, and contact card details managed by the site owner.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "Full display name shown in the header and hero.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "headline": {
+          "type": "string",
+          "description": "Short role or professional headline.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "bio": {
+          "type": "string",
+          "description": "Personal story and about description.",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "location": {
+          "type": "string",
+          "description": "City, country, or region.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "availabilityText": {
+          "type": "string",
+          "description": "Current availability status text.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Public contact email included on the page and vCard.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "Public phone number included on the page and vCard.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "whatsappNumber": {
+          "type": "string",
+          "description": "WhatsApp number in international format for direct chat.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "websiteUrl": {
+          "type": "string",
+          "description": "Primary website or custom domain link.",
+          "minLength": 0,
+          "maxLength": 300
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Portrait image path, HTTPS URL, or compressed data URI.",
+          "minLength": 0,
+          "maxLength": 700000
+        },
+        "heroImageUrl": {
+          "type": "string",
+          "description": "Hero showcase image path, HTTPS URL, or compressed data URI.",
+          "minLength": 0,
+          "maxLength": 700000
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether the profile is publicly visible to visitors."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the verified site owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        }
+      },
+      "required": [
+        "displayName",
+        "headline",
+        "bio",
+        "location",
+        "availabilityText",
+        "contactEmail",
+        "contactPhone",
+        "whatsappNumber",
+        "websiteUrl",
+        "avatarUrl",
+        "heroImageUrl",
+        "isPublished",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SocialLink": {
+      "title": "SocialLink",
+      "description": "A social media or external channel link displayed on the personal hub.",
+      "type": "object",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "Platform identifier used to select icon and styling.",
+          "enum": [
+            "whatsapp",
+            "instagram",
+            "linkedin",
+            "facebook",
+            "youtube",
+            "x",
+            "github",
+            "tiktok",
+            "telegram",
+            "email",
+            "website",
+            "other"
+          ],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "label": {
+          "type": "string",
+          "description": "Display title for the link card.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "handle": {
+          "type": "string",
+          "description": "Username, handle, or short subtitle.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "url": {
+          "type": "string",
+          "description": "Destination URL, mailto, or tel link.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sortOrder": {
+          "type": "number",
+          "description": "Numeric display order."
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "Whether the link is publicly visible."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the verified site owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        }
+      },
+      "required": [
+        "platform",
+        "label",
+        "handle",
+        "url",
+        "sortOrder",
+        "visible",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "A photography or creative project entry in the Bento portfolio showcase.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the photo or creative work.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "Category used for filtering.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "year": {
+          "type": "string",
+          "description": "Year or date label.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "description": {
+          "type": "string",
+          "description": "Caption or project story shown in lightbox.",
+          "minLength": 0,
+          "maxLength": 600
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Image asset path, HTTPS URL, or compressed data URI.",
+          "minLength": 1,
+          "maxLength": 700000
+        },
+        "externalUrl": {
+          "type": "string",
+          "description": "Optional external project link.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "featured": {
+          "type": "boolean",
+          "description": "Whether this item spans a 2x2 featured Bento tile."
+        },
+        "published": {
+          "type": "boolean",
+          "description": "Whether this item is publicly visible."
+        },
+        "sortOrder": {
+          "type": "number",
+          "description": "Numeric display order."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the verified site owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        }
+      },
+      "required": [
+        "title",
+        "category",
+        "year",
+        "description",
+        "imageUrl",
+        "externalUrl",
+        "featured",
+        "published",
+        "sortOrder",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "Direct inquiry submitted by a visitor, privately readable only by the verified site owner.",
+      "type": "object",
+      "properties": {
+        "senderName": {
+          "type": "string",
+          "description": "Visitor full name.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "senderEmail": {
+          "type": "string",
+          "description": "Visitor reply email address.",
+          "minLength": 3,
+          "maxLength": 120,
+          "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+        },
+        "senderPhone": {
+          "type": "string",
+          "description": "Optional visitor phone or WhatsApp number.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "subject": {
+          "type": "string",
+          "description": "Optional inquiry subject.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "message": {
+          "type": "string",
+          "description": "Inquiry message body.",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "status": {
+          "type": "string",
+          "description": "Workflow state managed by the owner.",
+          "enum": ["unread", "read", "archived"],
+          "minLength": 4,
+          "maxLength": 16
+        },
+        "targetProfileId": {
+          "type": "string",
+          "description": "Target profile identifier for relational scoping.",
+          "enum": ["main"],
+          "minLength": 4,
+          "maxLength": 4
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        }
+      },
+      "required": [
+        "senderName",
+        "senderEmail",
+        "senderPhone",
+        "subject",
+        "message",
+        "status",
+        "targetProfileId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/profiles/{profileId}": {
+      "schema": "Profile",
+      "description": "Singleton public personal profile document at /profiles/main."
+    },
+    "/socialLinks/{linkId}": {
+      "schema": "SocialLink",
+      "description": "Social media and contact links managed by the site owner."
+    },
+    "/gallery/{itemId}": {
+      "schema": "GalleryItem",
+      "description": "Creative portfolio and photo gallery items managed by the site owner."
+    },
+    "/messages/{messageId}": {
+      "schema": "ContactMessage",
+      "description": "Private direct contact form messages submitted by visitors for the site owner."
+    }
+  }
+}

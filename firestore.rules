@@ -1,0 +1,270 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 4.1: Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Verified Bootstrapped Owner Gate (Immune to Email Spoofing via email_verified == true)
+    function isSiteOwner() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'lakwinj1@gmail.com';
+    }
+
+    // Blueprint Validation Helper: Profile (Synced verbatim with firebase-blueprint.json)
+    function isValidProfile(data) {
+      return data.keys().hasAll([
+          'displayName', 'headline', 'bio', 'location', 'availabilityText',
+          'contactEmail', 'contactPhone', 'whatsappNumber', 'websiteUrl',
+          'avatarUrl', 'heroImageUrl', 'isPublished', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'displayName', 'headline', 'bio', 'location', 'availabilityText',
+          'contactEmail', 'contactPhone', 'whatsappNumber', 'websiteUrl',
+          'avatarUrl', 'heroImageUrl', 'isPublished', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.headline is string && data.headline.size() >= 1 && data.headline.size() <= 140
+        && data.bio is string && data.bio.size() >= 1 && data.bio.size() <= 1200
+        && data.location is string && data.location.size() <= 100
+        && data.availabilityText is string && data.availabilityText.size() <= 100
+        && data.contactEmail is string && data.contactEmail.size() <= 120
+        && data.contactPhone is string && data.contactPhone.size() <= 40
+        && data.whatsappNumber is string && data.whatsappNumber.size() <= 40
+        && data.websiteUrl is string && data.websiteUrl.size() <= 300
+        && data.avatarUrl is string && data.avatarUrl.size() <= 700000
+        && data.heroImageUrl is string && data.heroImageUrl.size() <= 700000
+        && data.isPublished is bool
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.ownerUid == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Blueprint Validation Helper: SocialLink
+    function isValidSocialLink(data) {
+      return data.keys().hasAll([
+          'platform', 'label', 'handle', 'url', 'sortOrder',
+          'visible', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'platform', 'label', 'handle', 'url', 'sortOrder',
+          'visible', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.platform is string && data.platform.size() >= 1 && data.platform.size() <= 30
+        && data.platform in [
+          'whatsapp', 'instagram', 'linkedin', 'facebook', 'youtube',
+          'x', 'github', 'tiktok', 'telegram', 'email', 'website', 'other'
+        ]
+        && data.label is string && data.label.size() >= 1 && data.label.size() <= 60
+        && data.handle is string && data.handle.size() <= 80
+        && data.url is string && data.url.size() >= 1 && data.url.size() <= 500
+        && data.sortOrder is number
+        && data.visible is bool
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.ownerUid == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Blueprint Validation Helper: GalleryItem
+    function isValidGalleryItem(data) {
+      return data.keys().hasAll([
+          'title', 'category', 'year', 'description', 'imageUrl', 'externalUrl',
+          'featured', 'published', 'sortOrder', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'category', 'year', 'description', 'imageUrl', 'externalUrl',
+          'featured', 'published', 'sortOrder', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 100
+        && data.category is string && data.category.size() >= 1 && data.category.size() <= 40
+        && data.year is string && data.year.size() <= 20
+        && data.description is string && data.description.size() <= 600
+        && data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 700000
+        && data.externalUrl is string && data.externalUrl.size() <= 500
+        && data.featured is bool
+        && data.published is bool
+        && data.sortOrder is number
+        && data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128
+        && data.ownerUid == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Blueprint Validation Helper: ContactMessage
+    function isValidContactMessage(data) {
+      return data.keys().hasAll([
+          'senderName', 'senderEmail', 'senderPhone', 'subject',
+          'message', 'status', 'targetProfileId', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'senderName', 'senderEmail', 'senderPhone', 'subject',
+          'message', 'status', 'targetProfileId', 'createdAt', 'updatedAt'
+        ])
+        && data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 80
+        && data.senderEmail is string && data.senderEmail.size() >= 3 && data.senderEmail.size() <= 120
+        && data.senderEmail.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && data.senderPhone is string && data.senderPhone.size() <= 40
+        && data.subject is string && data.subject.size() <= 120
+        && data.message is string && data.message.size() >= 1 && data.message.size() <= 2000
+        && data.status is string && data.status.size() >= 4 && data.status.size() <= 16
+        && data.status in ['unread', 'read', 'archived']
+        && data.targetProfileId is string && data.targetProfileId.size() == 4
+        && data.targetProfileId == 'main'
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // 1. Singleton Public Profile (/profiles/main)
+    match /profiles/{profileId} {
+      allow get: if profileId == 'main' && (
+        resource == null
+        || existing().isPublished == true
+        || isSiteOwner()
+      );
+      allow list: if false;
+
+      allow create: if isSiteOwner()
+        && profileId == 'main'
+        && isValidProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSiteOwner()
+        && profileId == 'main'
+        && isValidProfile(incoming())
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Edit Profile Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'displayName', 'headline', 'bio', 'location', 'availabilityText',
+            'contactEmail', 'contactPhone', 'whatsappNumber', 'websiteUrl',
+            'avatarUrl', 'heroImageUrl', 'isPublished', 'updatedAt'
+          ])
+        );
+
+      allow delete: if false;
+    }
+
+    // 2. Social & Channel Links (/socialLinks/{linkId})
+    match /socialLinks/{linkId} {
+      allow get: if isValidId(linkId) && (
+        isSiteOwner()
+        || (resource != null && existing().visible == true)
+      );
+      allow list: if existing().visible == true || isSiteOwner();
+
+      allow create: if isSiteOwner()
+        && isValidId(linkId)
+        && isValidSocialLink(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSiteOwner()
+        && isValidId(linkId)
+        && isValidSocialLink(incoming())
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Toggle Visibility or Sort Order
+          incoming().diff(existing()).affectedKeys().hasOnly(['visible', 'sortOrder', 'updatedAt'])
+          ||
+          // Action: Edit Full Link Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'platform', 'label', 'handle', 'url', 'sortOrder', 'visible', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isSiteOwner() && isValidId(linkId);
+    }
+
+    // 3. Portfolio & Photo Gallery (/gallery/{itemId})
+    match /gallery/{itemId} {
+      allow get: if isValidId(itemId) && (
+        isSiteOwner()
+        || (resource != null && existing().published == true)
+      );
+      allow list: if existing().published == true || isSiteOwner();
+
+      allow create: if isSiteOwner()
+        && isValidId(itemId)
+        && isValidGalleryItem(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSiteOwner()
+        && isValidId(itemId)
+        && isValidGalleryItem(incoming())
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Toggle Featured or Published Flag
+          incoming().diff(existing()).affectedKeys().hasOnly(['featured', 'published', 'sortOrder', 'updatedAt'])
+          ||
+          // Action: Edit Full Gallery Item
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'category', 'year', 'description', 'imageUrl',
+            'externalUrl', 'featured', 'published', 'sortOrder', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isSiteOwner() && isValidId(itemId);
+    }
+
+    // 4. Visitor Direct Contact Messages (/messages/{messageId}) - Strict PII Isolation
+    match /messages/{messageId} {
+      allow get: if isSiteOwner() && isValidId(messageId);
+      allow list: if isSiteOwner() && existing().targetProfileId == 'main';
+
+      allow create: if isValidId(messageId)
+        && isValidContactMessage(incoming())
+        && incoming().status == 'unread'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSiteOwner()
+        && isValidId(messageId)
+        && isValidContactMessage(incoming())
+        && existing().status != 'archived'
+        && incoming().createdAt == existing().createdAt
+        && incoming().senderName == existing().senderName
+        && incoming().senderEmail == existing().senderEmail
+        && incoming().senderPhone == existing().senderPhone
+        && incoming().subject == existing().subject
+        && incoming().message == existing().message
+        && incoming().targetProfileId == existing().targetProfileId
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Mark Message Read or Archive (Terminal State)
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        );
+
+      allow delete: if isSiteOwner() && isValidId(messageId);
+    }
+  }
+}
